@@ -21,8 +21,10 @@ struct TorrentInfoClass {
 	TextLayer* speed;
 	TextLayer* etaLbl;
 	TextLayer* eta;
+	ActionBarLayer* actionBar;
 	
 	// Vars
+	TorrentInfo* torrent;
 	double progress;
 	char sizeBfr[64];
 	char downloadedBfr[64];
@@ -61,11 +63,44 @@ void formatBytes(char* bfr, long long bytes, bool speed) {
 		snprintf(bfr, 64, "%lli GB%s", bytes/1024/1024/1024, (speed ? "/s" : ""));
 	
 }
+
+void calculateEta(char* bfr, long long numSeconds) {
+	
+	// Check progress
+	if (numSeconds <= 0) {
+		snprintf(bfr, 64, "-");
+		return;
+	}
+	
+	// Format time left
+	if (numSeconds < 60 && numSeconds == 1)
+		snprintf(bfr, 64, "%lli second", numSeconds);
+	else if (numSeconds < 60)
+		snprintf(bfr, 64, "%lli seconds", numSeconds);
+	else if (numSeconds < 60*60 && numSeconds/60 == 1)
+		snprintf(bfr, 64, "%lli minute", numSeconds/60);
+	else if (numSeconds < 60*60)
+		snprintf(bfr, 64, "%lli minutes", numSeconds/60);
+	else if (numSeconds < 60*60*24 && numSeconds/60/60 == 1)
+		snprintf(bfr, 64, "%lli hour", numSeconds/60/60);
+	else if (numSeconds < 60*60*24)
+		snprintf(bfr, 64, "%lli hours", numSeconds/60/60);
+	else if (numSeconds/60/60/24 == 1)
+		snprintf(bfr, 64, "%lli day", numSeconds/60/60/24);
+	else
+		snprintf(bfr, 64, "%lli days", numSeconds/60/60/24);
+	
+}
+
+bool TorrentInfo_isVisible() {
+	return (window_stack_get_top_window() == TorrentInfoWindow.window);
+}
 	
 void TorrentInfo_show(TorrentInfo* torrent) {
 	
 	// Show window
-	if (window_stack_get_top_window() != TorrentInfoWindow.window)
+	TorrentInfoWindow.torrent = torrent;
+	if (!TorrentInfo_isVisible())
 		window_stack_push(TorrentInfoWindow.window, true);
 	
 	// Set icon
@@ -96,18 +131,66 @@ void TorrentInfo_show(TorrentInfo* torrent) {
 	text_layer_set_text(TorrentInfoWindow.speed, TorrentInfoWindow.speedBfr);
 	
 	// Set ETA
-	text_layer_set_text(TorrentInfoWindow.eta, "-");
+	calculateEta(TorrentInfoWindow.etaBfr, torrent->timeLeft);
+	text_layer_set_text(TorrentInfoWindow.eta, TorrentInfoWindow.etaBfr);
 	
 	// Redraw window and progress bar
 	TorrentInfoWindow.progress = (double) torrent->downloaded / torrent->size;
 	layer_mark_dirty(window_get_root_layer(TorrentInfoWindow.window));
 	
+	// Set action icon
+	if (torrent->active)
+		action_bar_layer_set_icon(TorrentInfoWindow.actionBar, BUTTON_ID_SELECT, Resources.pauseSmall);
+	else
+		action_bar_layer_set_icon(TorrentInfoWindow.actionBar, BUTTON_ID_SELECT, Resources.playSmall);
+	
+}
+
+void TorrentInfo_startStop(void* context) {
+	
+	// Change icon
+	TorrentInfoWindow.torrent->active = !TorrentInfoWindow.torrent->active;
+	if (TorrentInfoWindow.torrent->active)
+		action_bar_layer_set_icon(TorrentInfoWindow.actionBar, BUTTON_ID_SELECT, Resources.pauseSmall);
+	else
+		action_bar_layer_set_icon(TorrentInfoWindow.actionBar, BUTTON_ID_SELECT, Resources.playSmall);
+	
+	// Send message to backend
+	if (TorrentInfoWindow.torrent->active) {
+		
+		// Start torrent
+		DictionaryIterator* iter;
+		app_message_outbox_begin(&iter);
+		dict_write_cstring(iter, 1, "start");
+		dict_write_cstring(iter, 2, TorrentInfoWindow.torrent->hash);
+		app_message_outbox_send();
+		
+	} else {
+		
+		// Stop torrent
+		DictionaryIterator* iter;
+		app_message_outbox_begin(&iter);
+		dict_write_cstring(iter, 1, "stop");
+		dict_write_cstring(iter, 2, TorrentInfoWindow.torrent->hash);
+		app_message_outbox_send();
+		
+	}
+	
+}
+
+void TorrentInfo_clickConfig(void* context) {
+  window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) TorrentInfo_startStop);
 }
 
 void TorrentInfo_load() {
 	
+	// Create action bar
+	TorrentInfoWindow.actionBar = action_bar_layer_create();
+	action_bar_layer_add_to_window(TorrentInfoWindow.actionBar, TorrentInfoWindow.window);
+	action_bar_layer_set_click_config_provider(TorrentInfoWindow.actionBar, TorrentInfo_clickConfig);
+	
 	// Create icon view
-	int width = 144;
+	int width = 144 - ACTION_BAR_WIDTH;
 	int height = 168-16;
 	TorrentInfoWindow.icon = bitmap_layer_create(GRect(0, 0, 44, 44));
 	layer_add_child(window_get_root_layer(TorrentInfoWindow.window), bitmap_layer_get_layer(TorrentInfoWindow.icon));
@@ -131,12 +214,12 @@ void TorrentInfo_load() {
 	layer_add_child(window_get_root_layer(TorrentInfoWindow.window), text_layer_get_layer(TorrentInfoWindow.size));
 	
 	// Create down label layer
-	TorrentInfoWindow.downLbl = text_layer_create(GRect(10, 60+16*1, 80, 16));
+	TorrentInfoWindow.downLbl = text_layer_create(GRect(10, 60+16*1, 90, 16));
 	text_layer_set_text(TorrentInfoWindow.downLbl, "Downloaded:");
 	text_layer_set_font(TorrentInfoWindow.downLbl, fonts_get_system_font(FONT_KEY_GOTHIC_14));
 	layer_add_child(window_get_root_layer(TorrentInfoWindow.window), text_layer_get_layer(TorrentInfoWindow.downLbl));
 	
-	TorrentInfoWindow.down = text_layer_create(GRect(width-60, 60+16*1, 50, 16));
+	TorrentInfoWindow.down = text_layer_create(GRect(width-50, 60+16*1, 40, 16));
 	text_layer_set_text(TorrentInfoWindow.down, "0 KB");
 	text_layer_set_text_alignment(TorrentInfoWindow.down, GTextAlignmentRight);
 	text_layer_set_font(TorrentInfoWindow.down, fonts_get_system_font(FONT_KEY_GOTHIC_14));
@@ -167,12 +250,12 @@ void TorrentInfo_load() {
 	layer_add_child(window_get_root_layer(TorrentInfoWindow.window), text_layer_get_layer(TorrentInfoWindow.speed));
 	
 	// Create eta label layer
-	TorrentInfoWindow.etaLbl = text_layer_create(GRect(10, 60+16*4, 80, 16));
+	TorrentInfoWindow.etaLbl = text_layer_create(GRect(10, 60+16*4, 60, 16));
 	text_layer_set_text(TorrentInfoWindow.etaLbl, "ETA:");
 	text_layer_set_font(TorrentInfoWindow.etaLbl, fonts_get_system_font(FONT_KEY_GOTHIC_14));
 	layer_add_child(window_get_root_layer(TorrentInfoWindow.window), text_layer_get_layer(TorrentInfoWindow.etaLbl));
 	
-	TorrentInfoWindow.eta = text_layer_create(GRect(width-60, 60+16*4, 50, 16));
+	TorrentInfoWindow.eta = text_layer_create(GRect(width-80, 60+16*4, 70, 16));
 	text_layer_set_text(TorrentInfoWindow.eta, "0 KB");
 	text_layer_set_text_alignment(TorrentInfoWindow.eta, GTextAlignmentRight);
 	text_layer_set_font(TorrentInfoWindow.eta, fonts_get_system_font(FONT_KEY_GOTHIC_14));
@@ -183,18 +266,18 @@ void TorrentInfo_load() {
 void TorrentInfo_draw(struct Layer* layer, GContext* ctx) {
 	
 	// Fill with white
-	int width = 144;
+	int width = 144 - ACTION_BAR_WIDTH;
 	int height = 168-16;
 	graphics_context_set_fill_color(ctx, GColorWhite);
-	graphics_fill_rect(ctx, GRect(0, 0, width, height), 0, GCornerNone);
+	graphics_fill_rect(ctx, GRect(0, 0, width + ACTION_BAR_WIDTH, height), 0, GCornerNone);
 	
 	// Draw progress bar
 	graphics_context_set_fill_color(ctx, GColorBlack);
-	graphics_draw_round_rect(ctx, GRect(8, 44+8, width-16, 8), 2);
+	graphics_draw_round_rect(ctx, GRect(8, 44+6, width-16, 8), 2);
 	
 	// Draw progress
 	int barWidth = TorrentInfoWindow.progress * (width-16);
-	graphics_fill_rect(ctx, GRect(8, 44+8, barWidth, 8), 2, GCornersAll);
+	graphics_fill_rect(ctx, GRect(8, 44+6, barWidth, 8), 2, GCornersAll);
 	
 }
 
@@ -202,6 +285,18 @@ void TorrentInfo_unload() {
 	
 	// Unload stuff
 	bitmap_layer_destroy(TorrentInfoWindow.icon);
+	action_bar_layer_destroy(TorrentInfoWindow.actionBar);
+	text_layer_destroy(TorrentInfoWindow.title);
+	text_layer_destroy(TorrentInfoWindow.sizeLbl);
+	text_layer_destroy(TorrentInfoWindow.size);
+	text_layer_destroy(TorrentInfoWindow.downLbl);
+	text_layer_destroy(TorrentInfoWindow.down);
+	text_layer_destroy(TorrentInfoWindow.upLbl);
+	text_layer_destroy(TorrentInfoWindow.up);
+	text_layer_destroy(TorrentInfoWindow.speedLbl);
+	text_layer_destroy(TorrentInfoWindow.speed);
+	text_layer_destroy(TorrentInfoWindow.etaLbl);
+	text_layer_destroy(TorrentInfoWindow.eta);
 	
 }
 

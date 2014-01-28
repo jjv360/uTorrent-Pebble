@@ -15,6 +15,7 @@ typedef struct TorrentInfoStruct {
 	long long uploaded;
 	int downloadSpeed;
 	int uploadSpeed;
+	int timeLeft;
 } TorrentInfo;
 
 void TorrentList_init();

@@ -1,6 +1,10 @@
 //
 // Pebble JS app
 
+// Vars
+var token = null;
+var cacheId = null;
+
 
 // Start app
 Pebble.addEventListener("ready", function() {
@@ -12,8 +16,15 @@ Pebble.addEventListener("ready", function() {
 // Show configuration page
 Pebble.addEventListener("showConfiguration", function(e) {
 	
+	// Create config
+	var config = {
+		host: localStorage.host,
+		user: localStorage.user,
+		pass: localStorage.pass
+	};
+	
 	// Launch settings page
-	Pebble.openURL("http://www.ydangleapps.com/uTorrentRemoteSettings.html");
+	Pebble.openURL("http://www.ydangleapps.com/uTorrentRemoteSettings.html#" + encodeURIComponent(JSON.stringify(config)));
 	
 });
 
@@ -41,6 +52,36 @@ Pebble.addEventListener("appmessage", function(e) {
 		
 		// Start checking for torrents
 		checkTorrents();
+		
+	} else if (msg.action == "start") {
+		
+		// Send request
+		doRequest("GET", "/gui/?action=start&token=" + token + "&hash=" + msg.hash , null, function(data) {
+			
+			// Started successfully
+			sendMsg({"action": "set_active", "hash": msg.hash, "value": false});
+			
+		}, function(err) {
+			
+			// Failed
+			console.log("Failed to start torrent " + msg.hash);
+			
+		});
+		
+	} else if (msg.action == "stop") {
+		
+		// Send request
+		doRequest("GET", "/gui/?action=stop&token=" + token + "&hash=" + msg.hash , null, function(data) {
+			
+			// Stopped successfully
+			sendMsg({"action": "set_active", "hash": msg.hash, "value": false});
+			
+		}, function(err) {
+			
+			// Failed
+			console.log("Failed to stop torrent " + msg.hash);
+			
+		});
 		
 	}
 	
@@ -107,8 +148,6 @@ function doRequest(method, url, data, successCallback, failCallback) {
 	
 }
 
-var token = null;
-var cacheId = null;
 function checkTorrents() {
 	
 	// Check for valid host name
@@ -132,6 +171,9 @@ function checkTorrents() {
 		return;
 	}
 	
+	// Started getting list of torrents from server
+	sendMsg({"action": "listing_torrents"});
+	
 	// Do request
 	var url = "/gui/?list=1&token=" + token;
 	if (cacheId) url += "&cid=" + cacheId;
@@ -152,7 +194,8 @@ function checkTorrents() {
 				downloaded: t[5],
 				uploaded: t[6],
 				uploadSpeed: t[8],
-				downloadSpeed: t[9]
+				downloadSpeed: t[9],
+				timeLeft: t[10]
 			};
 			
 			// Send to app
@@ -174,7 +217,8 @@ function checkTorrents() {
 				downloaded: tp[5],
 				uploaded: tp[6],
 				uploadSpeed: tp[8],
-				downloadSpeed: tp[9]
+				downloadSpeed: tp[9],
+				timeLeft: tp[10]
 			};
 			
 			// Send to app
@@ -223,6 +267,7 @@ function sendTorrentState(torrent) {
 	sendMsg({"action": "set_uploaded", "hash": torrent.hash, "value": torrent.uploaded/1024});
 	sendMsg({"action": "set_downloadSpeed", "hash": torrent.hash, "value": torrent.downloadSpeed});
 	sendMsg({"action": "set_uploadSpeed", "hash": torrent.hash, "value": torrent.uploadSpeed});
+	sendMsg({"action": "set_timeLeft", "hash": torrent.hash, "value": torrent.timeLeft});
 	
 }
 

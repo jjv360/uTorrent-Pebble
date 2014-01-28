@@ -9,6 +9,7 @@
 
 void TorrentInfo_init();
 void TorrentInfo_show(TorrentInfo* torrent);
+bool TorrentInfo_isVisible();
 void TorrentInfo_deinit();
 
 #endif

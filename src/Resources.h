@@ -13,6 +13,8 @@ struct _Resources {
 	GBitmap* downloadingIcon;
 	GBitmap* completeIcon;
 	GBitmap* stoppedIcon;
+	GBitmap* pauseSmall;
+	GBitmap* playSmall;
 	
 };
 

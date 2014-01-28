@@ -19,6 +19,7 @@ struct TorrentListClass {
 	int numTorrents;
 	TorrentInfo torrents[32];
 	AppTimer* updateTimer;
+	TorrentInfo* visibleTorrent;
 	
 } TorrentList;
 
@@ -146,10 +147,10 @@ void TorrentList_itemSelected(struct MenuLayer* menu_layer, MenuIndex* cell_inde
 		return;
 	
 	// Get torrent
-	TorrentInfo* torrent = &(TorrentList.torrents[cell_index->row]);
+	TorrentList.visibleTorrent = &(TorrentList.torrents[cell_index->row]);
 	
 	// Show torrent info window
-	TorrentInfo_show(torrent);
+	TorrentInfo_show(TorrentList.visibleTorrent);
 	
 }
 
@@ -243,19 +244,24 @@ void TorrentList_msgReceived(DictionaryIterator* received, void* context) {
 	if (strcmp(action->value->cstring, "invalid_settings") == 0) {
 		
 		// User needs to set settings in the app
-		text_layer_set_text(TorrentList.statusText, "Check settings on phone...");		
+		text_layer_set_text(TorrentList.statusText, "Check settings on phone");		
 		
 	} else if (strcmp(action->value->cstring, "invalid_login") == 0) {
 		
 		// Updating the torrent list has begun
-		text_layer_set_text(TorrentList.statusText, "Authentication failed...");		
+		text_layer_set_text(TorrentList.statusText, "Authentication failed");		
 		
 	} else if (strcmp(action->value->cstring, "connection_failed") == 0) {
 		
 		// Updating the torrent list has begun
-		text_layer_set_text(TorrentList.statusText, "Couldn't connect to server...");		
+		text_layer_set_text(TorrentList.statusText, "Couldn't connect to uTorrent");		
 		
 	} else if (strcmp(action->value->cstring, "update_started") == 0) {
+		
+		// Updating the torrent list has begun
+		text_layer_set_text(TorrentList.statusText, "Connecting to uTorrent...");		
+		
+	} else if (strcmp(action->value->cstring, "listing_torrents") == 0) {
 		
 		// Updating the torrent list has begun
 		text_layer_set_text(TorrentList.statusText, "Getting torrent list...");		
@@ -278,6 +284,10 @@ void TorrentList_msgReceived(DictionaryIterator* received, void* context) {
 			return;
 			
 		}
+		
+		// Check if should update info view
+		if (TorrentList.visibleTorrent && TorrentInfo_isVisible())
+			TorrentInfo_show(TorrentList.visibleTorrent);
 		
 	} else if (strcmp(action->value->cstring, "set_name") == 0) {
 		
@@ -421,6 +431,26 @@ void TorrentList_msgReceived(DictionaryIterator* received, void* context) {
 		
 		// Set value
 		torrent->uploadSpeed = value->value->int32;
+		
+	} else if (strcmp(action->value->cstring, "set_timeLeft") == 0) {
+		
+		// Get hash
+		Tuple* hash = dict_find(received, 2);
+		if (!action)
+			return;
+		
+		// Get torrent
+		TorrentInfo* torrent = TorrentList_getTorrent(hash->value->cstring);
+		if (!torrent)
+			return;
+		
+		// Get value
+		Tuple* value = dict_find(received, 3);
+		if (!value)
+			return;
+		
+		// Set value
+		torrent->timeLeft = value->value->int32;
 		
 	} else {
 		

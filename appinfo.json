@@ -20,13 +20,24 @@
         "media": [
             {
                 "type": "png",
-                "name": "STOP_ICON",
-                "file": "images/Stopped.png"
+                "name": "PAUSE_SMALL",
+                "file": "images/Pause Small.png"
             },
             {
                 "type": "png",
-                "name": "COMPLETE_ICON",
-                "file": "images/Complete.png"
+                "name": "PLAY_SMALL",
+                "file": "images/Play Small.png"
+            },
+            {
+                "menuIcon": true,
+                "type": "png",
+                "name": "IMAGE_MAIN_ICON",
+                "file": "images/uTorrent Main Icon.png"
+            },
+            {
+                "type": "png",
+                "name": "IMAGE_BIG_ICON",
+                "file": "images/Big Icon.png"
             },
             {
                 "type": "png",
@@ -35,14 +46,13 @@
             },
             {
                 "type": "png",
-                "name": "IMAGE_BIG_ICON",
-                "file": "images/Big Icon.png"
+                "name": "COMPLETE_ICON",
+                "file": "images/Complete.png"
             },
             {
-                "menuIcon": true,
                 "type": "png",
-                "name": "IMAGE_MAIN_ICON",
-                "file": "images/uTorrent Main Icon.png"
+                "name": "STOP_ICON",
+                "file": "images/Stopped.png"
             }
         ]
     }
