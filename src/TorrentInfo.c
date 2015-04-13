@@ -54,13 +54,13 @@ struct TorrentInfoClass {
 void formatBytes(char* bfr, long long bytes, bool speed) {
 	
 	if (bytes < 1024)
-		snprintf(bfr, 64, "%lli B%s", bytes, (speed ? "/s" : ""));
+		snprintf(bfr, 64, "%li B%s", (long) bytes, (speed ? "/s" : ""));
 	else if (bytes < 1024*1024)
-		snprintf(bfr, 64, "%lli KB%s", bytes/1024, (speed ? "/s" : ""));
+		snprintf(bfr, 64, "%li KB%s", (long) (bytes/1024), (speed ? "/s" : ""));
 	else if (bytes < 1024*1024*1024)
-		snprintf(bfr, 64, "%lli MB%s", bytes/1024/1024, (speed ? "/s" : ""));
+		snprintf(bfr, 64, "%li MB%s", (long) (bytes/1024/1024), (speed ? "/s" : ""));
 	else
-		snprintf(bfr, 64, "%lli GB%s", bytes/1024/1024/1024, (speed ? "/s" : ""));
+		snprintf(bfr, 64, "%li GB%s", (long) (bytes/1024/1024/1024), (speed ? "/s" : ""));
 	
 }
 
@@ -74,21 +74,21 @@ void calculateEta(char* bfr, long long numSeconds) {
 	
 	// Format time left
 	if (numSeconds < 60 && numSeconds == 1)
-		snprintf(bfr, 64, "%lli second", numSeconds);
+		snprintf(bfr, 64, "%li second", (long) numSeconds);
 	else if (numSeconds < 60)
-		snprintf(bfr, 64, "%lli seconds", numSeconds);
+		snprintf(bfr, 64, "%li seconds", (long) numSeconds);
 	else if (numSeconds < 60*60 && numSeconds/60 == 1)
-		snprintf(bfr, 64, "%lli minute", numSeconds/60);
+		snprintf(bfr, 64, "%li minute", (long) (numSeconds/60));
 	else if (numSeconds < 60*60)
-		snprintf(bfr, 64, "%lli minutes", numSeconds/60);
+		snprintf(bfr, 64, "%li minutes", (long) (numSeconds/60));
 	else if (numSeconds < 60*60*24 && numSeconds/60/60 == 1)
-		snprintf(bfr, 64, "%lli hour", numSeconds/60/60);
+		snprintf(bfr, 64, "%li hour", (long) (numSeconds/60/60));
 	else if (numSeconds < 60*60*24)
-		snprintf(bfr, 64, "%lli hours", numSeconds/60/60);
+		snprintf(bfr, 64, "%li hours", (long) (numSeconds/60/60));
 	else if (numSeconds/60/60/24 == 1)
-		snprintf(bfr, 64, "%lli day", numSeconds/60/60/24);
+		snprintf(bfr, 64, "%li day", (long) (numSeconds/60/60/24));
 	else
-		snprintf(bfr, 64, "%lli days", numSeconds/60/60/24);
+		snprintf(bfr, 64, "%li days", (long) (numSeconds/60/60/24));
 	
 }
 
@@ -104,7 +104,9 @@ void TorrentInfo_show(TorrentInfo* torrent) {
 		window_stack_push(TorrentInfoWindow.window, true);
 	
 	// Set icon
-	if (torrent->downloaded >= torrent->size)
+	if (torrent->size == 0 && torrent->active)
+		bitmap_layer_set_bitmap(TorrentInfoWindow.icon, Resources.downloadingIcon);
+	else if (torrent->size > 0 && torrent->downloaded >= torrent->size)
 		bitmap_layer_set_bitmap(TorrentInfoWindow.icon, Resources.completeIcon);
 	else if (torrent->active)
 		bitmap_layer_set_bitmap(TorrentInfoWindow.icon, Resources.downloadingIcon);

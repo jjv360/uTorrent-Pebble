@@ -1,59 +1,65 @@
 {
-    "versionLabel": "1.0.0",
-    "uuid": "25a9793b-3c40-4f38-8144-5fe49a2f6ddf",
     "appKeys": {
         "action": 1,
         "hash": 2,
         "value": 3
     },
-    "longName": "uTorrent Remote",
-    "versionCode": 1,
     "capabilities": [
         "configurable"
     ],
-    "shortName": "uTorrent",
     "companyName": "jjv360",
-    "watchapp": {
-        "watchface": false
-    },
+    "longName": "uTorrent Remote",
+    "projectType": "native",
     "resources": {
         "media": [
             {
-                "type": "png",
-                "name": "PAUSE_SMALL",
-                "file": "images/Pause Small.png"
-            },
-            {
-                "type": "png",
-                "name": "PLAY_SMALL",
-                "file": "images/Play Small.png"
-            },
-            {
-                "menuIcon": true,
-                "type": "png",
-                "name": "IMAGE_MAIN_ICON",
-                "file": "images/uTorrent Main Icon.png"
-            },
-            {
-                "type": "png",
+                "file": "images/Big Icon.png",
                 "name": "IMAGE_BIG_ICON",
-                "file": "images/Big Icon.png"
+                "type": "png"
             },
             {
-                "type": "png",
-                "name": "DOWNLOAD_ICON",
-                "file": "images/Downloading.png"
+                "file": "images/uTorrent Main Icon.png",
+                "menuIcon": true,
+                "name": "IMAGE_MAIN_ICON",
+                "type": "png"
             },
             {
-                "type": "png",
-                "name": "COMPLETE_ICON",
-                "file": "images/Complete.png"
-            },
-            {
-                "type": "png",
+                "file": "images/Stopped.png",
                 "name": "STOP_ICON",
-                "file": "images/Stopped.png"
+                "type": "png"
+            },
+            {
+                "file": "images/Complete.png",
+                "name": "COMPLETE_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/Downloading.png",
+                "name": "DOWNLOAD_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/Play Small.png",
+                "name": "PLAY_SMALL",
+                "type": "png"
+            },
+            {
+                "file": "images/Pause Small.png",
+                "name": "PAUSE_SMALL",
+                "type": "png"
             }
         ]
+    },
+    "sdkVersion": "3",
+    "shortName": "uTorrent",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "25a9793b-3c40-4f38-8144-5fe49a2f6ddf",
+    "versionCode": 1,
+    "versionLabel": "1.2",
+    "watchapp": {
+        "watchface": false
     }
 }
