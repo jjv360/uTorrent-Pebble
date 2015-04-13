@@ -134,7 +134,7 @@ void TorrentList_drawRow(GContext* ctx, const Layer* cell_layer, MenuIndex* cell
 	#ifdef PBL_COLOR
 		graphics_context_set_stroke_color(ctx, GColorDarkGray);
 	#endif
-	
+
 	// Draw progress bar border
 	int width = 144;
 	int height = 44;
@@ -146,30 +146,30 @@ void TorrentList_drawRow(GContext* ctx, const Layer* cell_layer, MenuIndex* cell
 	graphics_draw_line(ctx, GPoint(barX+1, barY + barHeight-1), GPoint(barX + barWidth - 1, barY + barHeight-1));
 	graphics_draw_line(ctx, GPoint(barX, barY+1), GPoint(barX, barY + barHeight - 2));
 	graphics_draw_line(ctx, GPoint(barX + barWidth, barY+1), GPoint(barX + barWidth, barY + barHeight - 2));
-	
+
 	// Get progress size
 	double percent = (double) torrent->downloaded / torrent->size;
 	if (percent <= 0) return;
 	int innerBarWidth = percent * (barWidth-2);
-	
+
 	// Check if using color
 	#ifdef PBL_COLOR
-		
+
 		// Get colors
 		GColor shade1 = GColorIslamicGreen;
 		GColor shade2 = GColorDarkGreen;
-	
+
 		// Draw inner progress bar
 		graphics_context_set_fill_color(ctx, shade1);
 		graphics_fill_rect(ctx, GRect(barX + 1, barY + 1, innerBarWidth, (barHeight-2)/2), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, shade2);
 		graphics_fill_rect(ctx, GRect(barX + 1, barY + 1 +  (barHeight-2)/2, innerBarWidth,  (barHeight-2)/2), 0, GCornerNone);
-		
+
 	#else
-	
+
 		// Draw inner progress bar
-		graphics_fill_rect(ctx, GRect(barX + 1, barY + 1, innerBarWidth, barHeight), 0, GCornerNone);
-	
+		graphics_fill_rect(ctx, GRect(barX + 1, barY + 0, innerBarWidth, barHeight), 0, GCornerNone);
+
 	#endif
 	
 }
