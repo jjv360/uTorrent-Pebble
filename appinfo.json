@@ -8,6 +8,7 @@
         "configurable"
     ],
     "companyName": "jjv360",
+    "enableMultiJS": false,
     "longName": "uTorrent Remote",
     "projectType": "native",
     "resources": {
@@ -15,38 +16,38 @@
             {
                 "file": "images/Big Icon.png",
                 "name": "IMAGE_BIG_ICON",
-                "type": "png"
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Pause Small.png",
+                "name": "PAUSE_SMALL",
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Play Small.png",
+                "name": "PLAY_SMALL",
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Downloading.png",
+                "name": "DOWNLOAD_ICON",
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Complete.png",
+                "name": "COMPLETE_ICON",
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Stopped.png",
+                "name": "STOP_ICON",
+                "type": "bitmap"
             },
             {
                 "file": "images/uTorrent Main Icon.png",
                 "menuIcon": true,
                 "name": "IMAGE_MAIN_ICON",
-                "type": "png"
-            },
-            {
-                "file": "images/Stopped.png",
-                "name": "STOP_ICON",
-                "type": "png"
-            },
-            {
-                "file": "images/Complete.png",
-                "name": "COMPLETE_ICON",
-                "type": "png"
-            },
-            {
-                "file": "images/Downloading.png",
-                "name": "DOWNLOAD_ICON",
-                "type": "png"
-            },
-            {
-                "file": "images/Play Small.png",
-                "name": "PLAY_SMALL",
-                "type": "png"
-            },
-            {
-                "file": "images/Pause Small.png",
-                "name": "PAUSE_SMALL",
-                "type": "png"
+                "type": "bitmap"
             }
         ]
     },
@@ -57,8 +58,7 @@
         "basalt"
     ],
     "uuid": "25a9793b-3c40-4f38-8144-5fe49a2f6ddf",
-    "versionCode": 1,
-    "versionLabel": "1.2",
+    "versionLabel": "1.3",
     "watchapp": {
         "watchface": false
     }
